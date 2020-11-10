@@ -1,4 +1,4 @@
-function img = rasterize(points, width, height)
+function img = rasterize(points, width)
 	%% Configuration
 	STROKE_COLOR = 0;
 	BACKGROUND_COLOR = 255;
@@ -9,17 +9,40 @@ function img = rasterize(points, width, height)
 	AGGRESSIVENESS = 5;
 
 	%% Sanity Check
-	assert(max(points(:, 1)) <= width, "Error! Point x-values exceed width!");
-	assert(min(points(:, 1)) >= 1, "Error! Point x-values are less than 1!");
-	assert(max(points(:, 2)) <= height, "Error! Point y-values exceed height!");
-	assert(min(points(:, 2)) >= 1, "Error! Point y-values are less than 1!");
+	% assert(max(points(:, 1)) <= width, "Error! Point x-values exceed width!");
+	% assert(min(points(:, 1)) >= 1, "Error! Point x-values are less than 1!");
+	% assert(max(points(:, 2)) <= width, "Error! Point y-values exceed width!");
+	% assert(min(points(:, 2)) >= 1, "Error! Point y-values are less than 1!");
 	assert(size(points, 2) == 2, "Error! `points` must have two columns!");
 
 	%% Initialization
-	img = ones(height, width) * BACKGROUND_COLOR;
+	img = ones(width, width) * BACKGROUND_COLOR;
 
+	%% Scaling
+	% We want to scale each image to be full width/width on the largest dimension while preserving
+	% the aspect ratio on the other dimension. Additionally, we want to center it on the smalle axis.
+	
+	shifts = [0, 0]
+
+	% Scaling
+	actual_dimensions = range(points)
+	[~, largest_axis_idx] = max(actual_dimensions)
+	scale_factor = (width - 1) / actual_dimensions(largest_axis_idx) % width - 1 because 0 isn't a valid index
+	points = points .* scale_factor;
+	shifts(largest_axis_idx) = 1 - min(points(:, largest_axis_idx)) % shift so range is [1, width]
+
+	% Centering
+	[~, smallest_axis_idx] = min(actual_dimensions)
+	edge_target = floor((width - actual_dimensions(smallest_axis_idx)) / 2)
+	edge_offset = edge_target - min(points(:, smallest_axis_idx)) 
+	shifts(smallest_axis_idx) = edge_offset
+
+	points = points + shifts;
+
+	%% Drawing
 	for idx=1:size(points, 1)
-		%% Stroke Separation: Skip NaNs
+		%% Stroke Separation
+		% If a point is [NaN, NaN], it indicates the separation of two strokes, so skip it.
 		if isnan(points(idx, 1)) || isnan(points(idx, 2))
 			continue;
 		end
@@ -51,9 +74,11 @@ function img = rasterize(points, width, height)
 		% I'm a little worried that we're going to get floating point errors here meaning that it
 		% doesn't quite add up, but it hasn't been a problem yet.
 		for j=1:num_steps
-			x_pos = x_pos + x_step;
-			y_pos = y_pos + y_step;
+			x_pos = x_pos + x_step
+			y_pos = y_pos + y_step
 			img(round(y_pos), round(x_pos)) = STROKE_COLOR;
 		end
 	end
+
+	img = flip(img, 1);
 end
