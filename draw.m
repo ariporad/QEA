@@ -9,7 +9,7 @@ function data = draw(instructions)
     Y_MIN = 1;
     Y_MAX = 45;
     
-    drawing = figure("WindowButtonDownFcn", @onBtnDown)
+    drawing = figure("WindowButtonDownFcn", @onBtnDown);
     % These don't seem to work, so we do it in onBtnDown
     %figure("WindowButtonMotionFcn", @onMove)
     %figure("WindowButtonUpFcn", @onBtnUp)

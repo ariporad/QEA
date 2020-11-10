@@ -1,4 +1,13 @@
 function img = rasterize(points, width, height)
+	%% Configuration
+	STROKE_COLOR = 0;
+	BACKGROUND_COLOR = 255;
+
+	% This is used to figure out how many steps to make per pixel of difference in end points when
+	% drawing strokes. For example, if this is set to 5, and a stroke is being drawn between (1, 1)
+	% and (1, 2), it will draw 5 substeps. This is a kludge, but it works.
+	AGGRESSIVENESS = 5;
+
 	%% Sanity Check
 	assert(max(points(:, 1)) <= width, "Error! Point x-values exceed width!");
 	assert(min(points(:, 1)) >= 1, "Error! Point x-values are less than 1!");
@@ -7,7 +16,7 @@ function img = rasterize(points, width, height)
 	assert(size(points, 2) == 2, "Error! `points` must have two columns!");
 
 	%% Initialization
-	img = zeros(height, width);
+	img = ones(height, width) * BACKGROUND_COLOR;
 
 	for idx=1:size(points, 1)
 		%% Stroke Separation: Skip NaNs
@@ -19,7 +28,7 @@ function img = rasterize(points, width, height)
 		% For the first point of a stroke (either the first point period or the first point after a
 		% NaN), we simply draw the point itself and continue, since there's no stroke to draw.
 		if idx == 1 || isnan(points(idx - 1, 1)) || isnan(points(idx - 1, 2))
-			img(points(idx, 2), points(idx, 1)) = 255;
+			img(round(points(idx, 2)), round(points(idx, 1))) = STROKE_COLOR;
 			continue;
 		end
 
@@ -27,7 +36,10 @@ function img = rasterize(points, width, height)
 		dX = points(idx, 1) - points(idx - 1, 1);
 		dY = points(idx, 2) - points(idx - 1, 2);
 
-		num_steps = max(abs(dX), abs(dY));
+		% This tries to guess the number of substeps we need to draw the line, then increases it
+		% using the kludge of AGGRESSIVENESS to make sure it works. Improving this algorithm would
+		% improve the rasterization, but I don't think we care that much.
+		num_steps = max([1, abs(dX), abs(dY), sqrt((dX ^ 2) + (dY ^ 2))]) * AGGRESSIVENESS;
 
 		x_step = dX / num_steps;
 		y_step = dY / num_steps;
@@ -41,7 +53,7 @@ function img = rasterize(points, width, height)
 		for j=1:num_steps
 			x_pos = x_pos + x_step;
 			y_pos = y_pos + y_step;
-			img(round(y_pos), round(x_pos)) = 255;
+			img(round(y_pos), round(x_pos)) = STROKE_COLOR;
 		end
 	end
 end
