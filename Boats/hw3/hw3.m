@@ -2,7 +2,33 @@ h = 3;
 r = 6;
 theta = 10;
 
-phi = fzero(@(phi) calculate_eq(r, h, phi, theta), 0)
+phis = linspace(0, 5, 100);
+offsets = zeros(100, 1);
+
+for i=1:100
+	offsets(i) = calculate_eq(r,h,phis(i), theta);
+end
+
+clf; hold on;
+plot(phis, offsets);
+hold off;
+
+% [centerOfMass_global, contact_global, centerOfMass_local, contact_local, P] = calculate_duckie(r, h, phi, theta);
+
+% figure; clf; hold on;
+
+% scatter(P(1, :), P(2, :), 'b.')
+% scatter(centerOfMass_global(1), centerOfMass_global(2), 'g+')
+
+
+% axis equal;
+
+% hold off;
+
+
+
+
+% phi = fzero(@(phi) calculate_eq(r, h, phi, theta), 0)
 
 % phis = linspace(0, 10, 100);
 % errs = zeros(100);

@@ -3,7 +3,7 @@ function [centerOfMass_global, contact_global, centerOfMass_local, contact_local
     
     contact_local = [r * tand(phi); 0];
     
-    R_ramp = rotation_matrix(-theta);
+    R_ramp = rotation_matrix(-theta)
     centerOfMass_global = R_ramp * centerOfMass_local;
     contact_global = R_ramp * contact_local;
     

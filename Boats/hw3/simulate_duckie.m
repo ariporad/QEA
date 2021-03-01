@@ -1,5 +1,4 @@
 function [centerOfMass, centerOfBuoyancy, pointsInBoat] = simulate_duckie(predicate)
-
     density = 1;
     
     xPoints = linspace(-10, 10, 1000);
