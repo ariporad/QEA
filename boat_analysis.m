@@ -19,7 +19,7 @@ infill_cutoff_height = 0.04;
 
 %% Infill Parameters
 infill_l1 = 1;
-infill_l2 = 0.25;
+infill_l2 = 0.10;
 rho_infill = 1250; % kg / m^3
 rho_l1 = rho_infill * infill_l1;
 rho_l2 = rho_infill * infill_l2;
@@ -44,8 +44,8 @@ figure(1); clf;
 % for param_2=0.01:0.01:0.25
 
 %% Boat Shape
-param_1 = 750
-param_2 = 0.075
+param_1 = 400
+param_2 = 0.067
 
 
 insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/param_1).^(1/3) + ((abs(P(1, :) / param_2) .^ 8))) & P(2,:) <= H)
@@ -134,7 +134,7 @@ end
 %% plot the moment arm versus the angle
 figure(3); clf; hold on;
 plot(angle, moment_arm) % plot the data
-plot(linspace(0, 180, 10), zeros(10))
+% plot(linspace(0, 180, 10), zeros(10))
 legend("Moment Arm Curve", "Equilibria")
 title("Moment Arm Curve")
 xlabel('Heel Angle (degrees)') 
