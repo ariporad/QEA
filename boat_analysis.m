@@ -10,17 +10,16 @@ infill1color = [0.9290 0.6940 0.1250]; % define the color of the boat
 infill2color = [0.6290 0.2940 0.0250]; % define the color of the boat
 watercolor = [0 0.4470 0.7410]; % define the color of the water
 %% design parameters
-W = 4; % width m
-H = 2; % height m
+W = 0.10; % this is a MAX width
+H = 0.05; % height m
 
-L = 10; % length m 
-n = 1; % shape parameter
+L = 0.12; % length m 
 
-infill_cutoff_height = 0.05;
+infill_cutoff_height = 0.02;
 
 %% Infill Parameters
 infill_l1 = 1;
-infill_l2 = 0.1;
+infill_l2 = 0.25;
 rho_infill = 1250; % kg / m^3
 rho_l1 = rho_infill * infill_l1;
 rho_l2 = rho_infill * infill_l2;
@@ -37,7 +36,31 @@ zPoints = linspace(0,H,Npts); % set of points in the z direction (vertical)
 
 [X, Z] = meshgrid(xPoints, zPoints); % create the meshgri
 P = [X(:)'; Z(:)']; % pack the points into a matrix
-insideBoat = transpose(P(2,:) >= H*abs((2*P(1,:)/W)).^n & P(2,:) <= H); % find all the points inside the boat - a logical array
+
+% for param_1=0:50:1000 
+
+figure(1); clf;
+
+% for param_2=0.01:0.01:0.25
+
+%% Boat Shape
+param_1 = 750
+param_2 = 0.075
+
+
+insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/param_1).^(1/3) + ((abs(P(1, :) / param_2) .^ 8))) & P(2,:) <= H)
+% insideBoat = transpose(P(2,:) >= H*abs((2*P(1,:)/W)).^n & P(2,:) <= H); % find all the points inside the boat - a logical array
+
+scatter(P(1,insideBoat),P(2,insideBoat),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
+
+title(sprintf("param_1 = %d, param_2 = %d", param_1, param_2))
+
+drawnow
+
+% end
+
+% end
+
 
 dx = xPoints(2)-xPoints(1); % delta x
 dz = zPoints(2)-zPoints(1); % delta z
@@ -73,7 +96,7 @@ dtheta = 1; % define the angle step
 R = [cosd(dtheta) sind(dtheta); -sind(dtheta) cosd(dtheta)]; % define rotation matrix
 j = 1; % set the counter
 
-figure(1);
+figure(2);
 
 for theta = 0:dtheta:180 % loop over the angles
     dmin = min(P(2,:)); % find the minimum z coordinate of the boat
@@ -88,21 +111,29 @@ for theta = 0:dtheta:180 % loop over the angles
     moment_arm(j) = CoB(1, 1) - CoM(1, 1);
     angle(j) = theta; % define the angle
     hold off % prepare the figure
-    scatter(P(1,insideBoat),P(2,insideBoat),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
+
+    is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
+    is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
+    scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
+    scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color)
     scatter(P(1,underWaterAndInsideBoat),P(2,underWaterAndInsideBoat),[],watercolor) % plot the underwater section
     scatter(CoM(1,1), CoM(2,1), 1000, 'r.'); % plot the COM
     scatter(CoB(1,1), CoB(2,1), 1000, 'k.'); % plot the COB
+    title(sprintf("Boat at Heel Angle: theta = %d deg", theta))
     drawnow % force the graphics
     P = R*P; % rotate the boat a little
     CoM = R*CoM; % rotate the center of mass too
     j = j + 1; % update the counter
 end
 %% plot the moment arm versus the angle
-figure(2); clf;
+figure(3); clf; hold on;
 plot(angle, moment_arm) % plot the data
-xlabel('heel angle (degrees)') 
-ylabel('Moment arm (m)')
-grid on
+plot(linspace(0, 180, 10), zeros(10))
+legend("Moment Arm Curve", "Equilibria")
+title("Moment Arm Curve")
+xlabel('Heel Angle (degrees)') 
+ylabel('Moment Arm (m)')
+grid on; hold off
 
 %% TODO: Complete the bouyancy function - should be zero when balanced
 function res = buoyancy(d)
