@@ -11,11 +11,11 @@ infill2color = [0.6290 0.2940 0.0250]; % define the color of the boat
 watercolor = [0 0.4470 0.7410]; % define the color of the water
 %% design parameters
 W = 0.10; % this is a MAX width
-H = 0.05; % height m
+H = 0.065; % height m
 
 L = 0.12; % length m 
 
-infill_cutoff_height = 0.02;
+infill_cutoff_height = 0.04;
 
 %% Infill Parameters
 infill_l1 = 1;
@@ -39,7 +39,7 @@ P = [X(:)'; Z(:)']; % pack the points into a matrix
 
 % for param_1=0:50:1000 
 
-figure(1); clf;
+figure(1); clf; 
 
 % for param_2=0.01:0.01:0.25
 
@@ -49,13 +49,20 @@ param_2 = 0.075
 
 
 insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/param_1).^(1/3) + ((abs(P(1, :) / param_2) .^ 8))) & P(2,:) <= H)
+is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
+is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
 % insideBoat = transpose(P(2,:) >= H*abs((2*P(1,:)/W)).^n & P(2,:) <= H); % find all the points inside the boat - a logical array
 
-scatter(P(1,insideBoat),P(2,insideBoat),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
+scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
+scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color)
 
 title(sprintf("param_1 = %d, param_2 = %d", param_1, param_2))
 
 drawnow
+
+grid on;
+
+hold off;
 
 % end
 
@@ -88,6 +95,7 @@ boatmasses = (insideBoat * dA * L) .* fun_rho(P(2, :)')
 maxdisp = sum(boatmasses); % find the maximum displacement
 boatdisp = maxdisp
 CoD = P*boatmasses/maxdisp; % find the centroid of the boat
+
 P = P - CoD; % center the boat on the centroid
 CoD = CoD - CoD; % update the centroid
 CoM = CoD; % set the center of mass
@@ -112,8 +120,6 @@ for theta = 0:dtheta:180 % loop over the angles
     angle(j) = theta; % define the angle
     hold off % prepare the figure
 
-    is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
-    is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
     scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on % plot the boat
     scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color)
     scatter(P(1,underWaterAndInsideBoat),P(2,underWaterAndInsideBoat),[],watercolor) % plot the underwater section
