@@ -17,6 +17,6 @@ infill_l2 = 0.1;
 
 boat = create_boat(W, H, L, a, b, infill_l1, infill_l2, 0.0370, predicate);
 
-infill_cutoff = sweep(boat, 120, 140, 0.035, 0.04)
+boat.infill_cutoff = sweep(boat, 120, 140, 0.035, 0.04)
 
-sweep_moment_arm(boat, 0, 1, 180, true)
+avs = find_avs(boat, 120, 140)
