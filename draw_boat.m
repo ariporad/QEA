@@ -1,4 +1,6 @@
-function res = boat_analysis(draw, min_angle, max_angle, angle_step, W, H, L, infill_cutoff_height, a, b)
+function res = draw_boat(theta, W, H, L, infill_cutoff_height, a, b)
+    figure;
+
 %% Setup
 clf; % clear the current figure
 infill1color = [0.9290 0.6940 0.1250]; % define the color of the 1st infill zone
@@ -30,16 +32,6 @@ insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/a).^(1/3) + ((abs(P(1, :) / b) 
 is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
 is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
 
-if draw
-    figure(1); clf; 
-    scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on; % plot the boat
-    scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color);
-    title(sprintf("Boat (infill cutoff = %d, a = %d, b = %d)", infill_cutoff_height, a, b));
-    drawnow
-    grid on;
-    hold off;
-end
-
 dx = xPoints(2)-xPoints(1); % delta x
 dz = zPoints(2)-zPoints(1); % delta z
 dA = dx*dz; % define the area of each small section
@@ -49,66 +41,57 @@ maxdisp = sum(boatmasses); % find the maximum displacement
 boatdisp = maxdisp;
 CoD = P*boatmasses/maxdisp; % find the centroid of the boat
 
-dispratio = maxdisp / sum(((insideBoat * dA * L) .* wrho))
-
 P = P - CoD; % center the boat on the centroid
+P_orig = P;
 CoD = CoD - CoD; % update the centroid
 CoM = CoD; % set the center of mass
 %% main loop over the heel angles
-dtheta = 1; % define the angle step
-R = [cosd(dtheta) sind(dtheta); -sind(dtheta) cosd(dtheta)]; % define rotation matrix
+R = [cosd(theta) sind(theta); -sind(theta) cosd(theta)]; % define rotation matrix
 j = 1; % set the counter
 
-if draw
-    figure(2);
-end
+P = R * P;
+CoM = R * CoM;
+dmin = min(P(2,:)); % find the minimum z coordinate of the boat
+dmax = max(P(2,:)); % find the maximum z coordinate of the boat
+d = fzero(@buoyancy,[dmin,dmax]); % find the waterline d
+underWater = (P(2,:) <= d)'; % test if each part of the meshgrid is under the water
+underWaterAndInsideBoat = insideBoat & underWater;  % the & returns 1 if both conditions are true
+watermasses = underWaterAndInsideBoat*wrho*dA*L; % compute the mass of each underwater section
+watermass = sum(watermasses); % sum up the under water masses
+CoB = P*watermasses./watermass; % mass average of the under water boat points
+waterline(j) = d; % save the waterline
+moment_arm(j) = CoB(1, 1) - CoM(1, 1);
+angle(j) = theta; % define the angle
 
-for theta = 0:dtheta:180 % loop over the angles
-    dmin = min(P(2,:)); % find the minimum z coordinate of the boat
-    dmax = max(P(2,:)); % find the maximum z coordinate of the boat
-    d = fzero(@buoyancy,[dmin,dmax]); % find the waterline d
+    scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color, 'filled'), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on; % plot the boat
+    scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color, 'filled');
+    scatter(P(1,underWaterAndInsideBoat),P(2,underWaterAndInsideBoat),[],watercolor, 'filled'); % plot the underwater section
+    scatter(CoM(1,1), CoM(2,1), 1000, 'r.'); % plot the COM
+    scatter(CoB(1,1), CoB(2,1), 1000, 'k.'); % plot the COB
+
+    legend(sprintf("Infill Level 1 (%d%%)", infill_l1 * 100), sprintf("Infill Level 2 (%d%%)", infill_l2 * 100), "Water", "Center of Mass", "Center of Buoyancy")
+
+    title(sprintf("Cross-Section of the Boat at Midship, Equilibrium Water Level, and Heel Angle %d deg", theta));
+    hold off;
+
+    % Displacement Stuff
+    underWater = (P(2,:) <= d)'; % find meshgrid points under the water
+    
     underWater = (P(2,:) <= d)'; % test if each part of the meshgrid is under the water
     underWaterAndInsideBoat = insideBoat & underWater;  % the & returns 1 if both conditions are true
-    watermasses = underWaterAndInsideBoat*wrho*dA*L; % compute the mass of each underwater section
+    watermasses = (underWaterAndInsideBoat * dA * L) .* wrho;
     watermass = sum(watermasses); % sum up the under water masses
-    CoB = P*watermasses./watermass; % mass average of the under water boat points
-    waterline(j) = d; % save the waterline
-    moment_arm(j) = CoB(1, 1) - CoM(1, 1);
-    angle(j) = theta; % define the angle
-
-    if draw
-        hold off; % prepare the figure
-
-        scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on; % plot the boat
-        scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color);
-        scatter(P(1,underWaterAndInsideBoat),P(2,underWaterAndInsideBoat),[],watercolor); % plot the underwater section
-        scatter(CoM(1,1), CoM(2,1), 1000, 'r.'); % plot the COM
-        scatter(CoB(1,1), CoB(2,1), 1000, 'k.'); % plot the COB
-        title(sprintf("Cross-Section of the Boat at Midship, Equilibrium Water Level, and Heel Angle %d deg", theta));
-        drawnow; % force the graphics
-    end
-
-    P = R*P; % rotate the boat a little
-    CoM = R*CoM; % rotate the center of mass too
-    j = j + 1; % update the counter
-end
-
-if draw
-    %% plot the moment arm versus the angle
-    figure; clf; hold on;
-    plot(angle, moment_arm); % plot the data
-    legend("Moment Arm Curve");
-    title("Moment Arm Curve");
-    xlabel('Heel Angle (degrees)');
-    ylabel('Moment Arm (m)');
-    grid on; hold off;
-end
+    
+    CoB = P * watermasses ./ watermass; % mass average of the under water boat points
+    dispratio = boatdisp / watermass
 
 %% TODO: Complete the bouyancy function - should be zero when balanced
 function res = buoyancy(d)
+    underWater = (P(2,:) <= d)'; % find meshgrid points under the water
+    
     underWater = (P(2,:) <= d)'; % test if each part of the meshgrid is under the water
     underWaterAndInsideBoat = insideBoat & underWater;  % the & returns 1 if both conditions are true
-    watermasses = (underWaterAndInsideBoat * dA * L) .* wrho;%fun_rho(P(2, :)'); % compute the mass of each underwater section
+    watermasses = (underWaterAndInsideBoat * dA * L) .* wrho;
     watermass = sum(watermasses); % sum up the under water masses
     
     CoB = P * watermasses ./ watermass; % mass average of the under water boat points

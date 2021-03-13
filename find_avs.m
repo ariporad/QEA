@@ -61,23 +61,13 @@ function avs=find_avs(min_angle, max_angle, W, H, L, infill_cutoff_height, a, b)
 
 		%% TODO: Complete the bouyancy function - should be zero when balanced
 		function res = buoyancy(d)
-			underWater = (P_R(2,:) <= d)'; % find meshgrid points under the water
-
-			% begin task
-			% underWaterAndInsideBoat = boolean vector for inside boat and under water
-			% watermasses = the mass of each underwater section; 0 if not part of
-			%     submerged boat
-			% watermass = mass of the displaced water
-			% end task
-
-			% This is just from lines 55-58... ???
-			underWater = (P_R(2,:) <= d)'; % test if each part of the meshgrid is under the water
-			underWaterAndInsideBoat = insideBoat & underWater;  % the & returns 1 if both conditions are true
-			watermasses = (underWaterAndInsideBoat * dA * L) .* fun_rho(P_R(2, :)'); % compute the mass of each underwater section
-			watermass = sum(watermasses); % sum up the under water masses
-
-			CoB = P_R * watermasses ./ watermass; % mass average of the under water boat points
-			res = watermass - boatdisp; % difference between boat displacement and water displacement
+    underWater = (P_R(2,:) <= d)'; % test if each part of the meshgrid is under the water
+    underWaterAndInsideBoat = insideBoat & underWater;  % the & returns 1 if both conditions are true
+    watermasses = (underWaterAndInsideBoat * dA * L) .* wrho;%fun_rho(P(2, :)'); % compute the mass of each underwater section
+    watermass = sum(watermasses); % sum up the under water masses
+    
+    CoB = P_R * watermasses ./ watermass; % mass average of the under water boat points
+    res = watermass - boatdisp; % difference between boat displacement and water displacement
 		end
 	end
 	
