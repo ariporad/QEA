@@ -1,4 +1,4 @@
-function res = boat_analysis(draw, min_angle, max_angle, angle_step, W, H, L, infill_cutoff_height, a, b)
+function res = boat_analysis(draw, min_angle, max_angle, angle_step, W, H, L, infill_cutoff, a, b)
 %% Setup
 clf; % clear the current figure
 infill1color = [0.9290 0.6940 0.1250]; % define the color of the 1st infill zone
@@ -16,7 +16,7 @@ infill_l2 = 0.10; % 10% infill
 rho_l1 = rho_infill * infill_l1;
 rho_l2 = rho_infill * infill_l2;
 
-fun_rho = @(y) rho_l1 * (y < infill_cutoff_height) + rho_l2 * (y >= infill_cutoff_height);
+fun_rho = @(y) rho_l1 * (y < infill_cutoff) + rho_l2 * (y >= infill_cutoff);
 
 %% boat definition and key variables
 Npts = 200; % number of 1D spatial points (probably don't change)
@@ -27,14 +27,14 @@ zPoints = linspace(0,H,Npts); % set of points in the z direction (vertical)
 P = [X(:)'; Z(:)']; % pack the points into a matrix
 
 insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/a).^(1/3) + ((abs(P(1, :) / b) .^ 8))) & P(2,:) <= H);
-is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
-is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
+is_infill1 = insideBoat & (P(2, :) < infill_cutoff)';
+is_infill2 = insideBoat & (P(2, :) >= infill_cutoff)';
 
 if draw
     figure(1); clf; 
     scatter(P(1,is_infill1),P(2,is_infill1),[],infill1color), axis equal, axis([-max(W,H) max(W,H) -max(W,H) max(W,H)]), hold on; % plot the boat
     scatter(P(1,is_infill2),P(2,is_infill2),[],infill2color);
-    title(sprintf("Boat (infill cutoff = %d, a = %d, b = %d)", infill_cutoff_height, a, b));
+    title(sprintf("Boat (infill cutoff = %d, a = %d, b = %d)", infill_cutoff, a, b));
     drawnow
     grid on;
     hold off;

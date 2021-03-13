@@ -1,4 +1,4 @@
-function avs=find_avs(min_angle, max_angle, W, H, L, infill_cutoff_height, a, b)
+function avs=find_avs(min_angle, max_angle, W, H, L, infill_cutoff, a, b)
 	% Note: This code has *almost* everything you need to generate a righting 
 	% arm curve. Your task is to complete the buoyancy(d) function below.
 	% The buoyancy(d) function is defined at the bottom of the file;
@@ -13,7 +13,7 @@ function avs=find_avs(min_angle, max_angle, W, H, L, infill_cutoff_height, a, b)
 	rho_l1 = rho_infill * infill_l1;
 	rho_l2 = rho_infill * infill_l2;
 	
-	fun_rho = @(y) rho_l1 * (y < infill_cutoff_height) + rho_l2 * (y >= infill_cutoff_height);
+	fun_rho = @(y) rho_l1 * (y < infill_cutoff) + rho_l2 * (y >= infill_cutoff);
 	
 	%% physical constants
 	wrho = 1000; % water density kg/m^3
@@ -27,8 +27,8 @@ function avs=find_avs(min_angle, max_angle, W, H, L, infill_cutoff_height, a, b)
 	P = [X(:)'; Z(:)']; % pack the points into a matrix
 	
 	insideBoat = transpose(P(2, :) >= ((abs(P(1, :))/a).^(1/3) + ((abs(P(1, :) / b) .^ 8))) & P(2,:) <= H);
-	is_infill1 = insideBoat & (P(2, :) < infill_cutoff_height)';
-	is_infill2 = insideBoat & (P(2, :) >= infill_cutoff_height)';
+	is_infill1 = insideBoat & (P(2, :) < infill_cutoff)';
+	is_infill2 = insideBoat & (P(2, :) >= infill_cutoff)';
 
 	dx = xPoints(2)-xPoints(1); % delta x
 	dz = zPoints(2)-zPoints(1); % delta z
