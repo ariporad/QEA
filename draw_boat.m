@@ -1,4 +1,4 @@
-function res = draw_boat(rboat, description)
+function res = draw_boat(rboat, description, varargin)
     %% Setup
     infill1color = [0.9290 0.6940 0.1250]; % define the color of the 1st infill zone
     infill2color = [0.6290 0.2940 0.0250]; % define the color of the 2nd infill zone
@@ -12,11 +12,15 @@ function res = draw_boat(rboat, description)
     axis([-max(boat.W,boat.H) max(boat.W,boat.H) -max(boat.W,boat.H) max(boat.W,boat.H)]);
     hold on;
     scatter(rboat.P(1,rboat.is_infill_l2),rboat.P(2,rboat.is_infill_l2),[],infill2color, 'filled');
-    scatter(rboat.P(1,rboat.is_inside_underwater),rboat.P(2,rboat.is_inside_underwater),[],watercolor, 'filled');
     scatter(rboat.CoM(1,1), rboat.CoM(2,1), 1000, 'r.');
-    scatter(rboat.CoB(1,1), rboat.CoB(2,1), 1000, 'k.');
+    if ~ismember('nowater', varargin)
+        scatter(rboat.CoB(1,1), rboat.CoB(2,1), 1000, 'k.');
+        scatter(rboat.P(1,rboat.is_inside_underwater),rboat.P(2,rboat.is_inside_underwater),[],watercolor, 'filled');
+    end
     title(description);
-    legend(sprintf("Boat: Infill Level 1 (%d%%)", boat.infill_l1 * 100), sprintf("Boat: Infill Level 2 (%d%%)", boat.infill_l2 * 100), "Water", "Center of Mass", "Center of Buoyancy")
+    warning('off', 'MATLAB:legend:IgnoringExtraEntries')
+    legend(sprintf("Boat: Infill Level 1 (%d%%)", boat.infill_l1 * 100), sprintf("Boat: Infill Level 2 (%d%%)", boat.infill_l2 * 100), "Center of Mass", "Center of Buoyancy", "Water")
+    warning('on', 'MATLAB:legend:IgnoringExtraEntries')
     xlabel("X-Axis (m)")
     ylabel("Z-Axis (m)")
     drawnow; % force the graphics

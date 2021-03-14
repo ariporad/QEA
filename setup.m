@@ -1,4 +1,4 @@
-predicate = @(boat, P) transpose(P(2, :) >= ((abs(P(1, :))/boat.a).^(1/3) + ((abs(P(1, :) / boat.b) .^ 8))) & P(2,:) <= boat.H);
+predicate = @(boat, P) transpose(P(2, :) >= ((abs(P(1, :))/boat.a).^(1/3) + ((abs(P(1, :) / boat.b) .^ 8))) & P(2,:) <= boat.H & P(2, :) >= 0.01);
 
 W = 0.10; % this is a MAX width
 H = 0.065; % height m
