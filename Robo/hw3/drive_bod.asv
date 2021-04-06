@@ -1,6 +1,7 @@
 function drive_bod()
 % Insert any setup code you want to run here
 equations
+packet
 
 pub = rospublisher('raw_vel');
 
@@ -17,9 +18,19 @@ placeNeato(bridgeStart(1),  bridgeStart(2), startingThat(1), startingThat(2));
 pause(2);
 
 % time to drive!!
-
 rostic;
 
-while 
+while 1
+    cur_t = rostoc;
+    
+    if cur_t > T_RANGE(2)
+        break
+    end
+    
+    speedMsg = rosmessage(pub);
+    % TODO: Convert this to use matlabFunction ahead of time
+    % TODO: Could we pack these into a vector ahead of time?
+    speedMsg.Data = [double(subs(v_l, t, cur_t)), double(subs(v_r, t, cur_t))]
+end
 
 end
