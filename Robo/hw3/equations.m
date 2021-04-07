@@ -22,23 +22,23 @@ u = t .* alpha;
 ri=4 * (0.3960 * cos(2.65 * (u + 1.4)));
 rj=4 * (-0.99 * sin(u + 1.4));
 rk=0*u;
-r=[ri,rj,rk]
+r=[ri,rj,rk];
 
 
 %to take the derivative, we use the diff function in Matlab, with the
 %inputs being diff(function,variable to differentiate)
 dr=diff(r,t);
-v = dr
-speed = norm(v)
-T_hat=simplify(dr./norm(dr))
+v = dr;
+speed = norm(v);
+T_hat=simplify(dr./norm(dr));
 
 %Next, we want to find the unit normal vector
-dT_hat=simplify(diff(T_hat,t))
-omega = simplify(cross(T_hat, dT_hat))
+dT_hat=simplify(diff(T_hat,t));
+omega = simplify(cross(T_hat, dT_hat));
 % KLUDGE: This isn't super mathamatically sound (or maybe it is?) but it's
 % correct in practice
-rotation_speed = omega(3) %simplify(norm(omega))
-v_l = simplify(speed - (rotation_speed * (d / 2)))
-v_r = simplify(speed + (rotation_speed * (d / 2)))
+rotation_speed = omega(3); %simplify(norm(omega))
+v_l = simplify(speed - (rotation_speed * (d / 2)));
+v_r = simplify(speed + (rotation_speed * (d / 2)));
 
-N_hat=simplify(dT_hat/norm(dT_hat))
+N_hat=simplify(dT_hat/norm(dT_hat));
