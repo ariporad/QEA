@@ -1,7 +1,5 @@
 % First we must define the symbolic variables we will being using:
 syms t omega v_l v_r
-
-% Assumptions help MATLAB not go insane
 assume(t, {'real', 'positive'})
 assume(omega, 'real')
 assume(v_l, 'real')
@@ -28,10 +26,10 @@ T_hat=simplify(v./norm(v));
 dT_hat=simplify(diff(T_hat,t));
 N_hat=simplify(dT_hat/norm(dT_hat));
 
-% Calculate the rotational velocity and speed
+% Next, we want to find the unit normal vector
 omega = simplify(cross(T_hat, dT_hat));
-rotation_speed = omega(3);
-
-% Calculate the wheel velocities
+% KLUDGE: This isn't super mathamatically sound (or maybe it is?) but it's
+% correct in practice
+rotation_speed = omega(3); %simplify(norm(omega))
 v_l = simplify(speed - (rotation_speed * (d / 2)));
 v_r = simplify(speed + (rotation_speed * (d / 2)));
