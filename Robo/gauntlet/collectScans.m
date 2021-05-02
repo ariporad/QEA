@@ -26,7 +26,7 @@ function lidar_results = collectScans(lidar_positions, filename)
     end
     
     % save the data if we were given a filename
-    if nargsin >= 2
+    if nargin >= 2
         save(filename, "lidar_results", "lidar_positions");
     end
 end
