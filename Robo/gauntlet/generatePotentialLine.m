@@ -1,6 +1,8 @@
 function Z = generatePotentialLine(X, Y, start, endpoint, steps)
+    length = norm(endpoint - start);
+
     if nargin < 5
-        steps = 10;
+        steps = length * 25;
     end
     
     dx = (endpoint(1) - start(1)) / steps;
