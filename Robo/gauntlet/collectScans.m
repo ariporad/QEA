@@ -1,6 +1,11 @@
-% lidar.mat has a lidar matrix which is n x 2 x m, where each (:, :, m) is
-% one scan in the form of [r, theta], where r and theta are column vectors.
-% It also has a 3 x m matrix of column vectors of the format [x, y, phi]
+%% Helper to collect LIDAR scans from a set of positions and save the
+% resulting data to a file.
+
+% The file has a lidar_results matrix which is n x 2 x m, where each
+% (:, :, m) is one scan in the form of [r, theta], where r and theta are
+% column vectors. It also has a lidar_positions 3 x m matrix of column
+% vectors of the format [x, y, phi] (this is the same as the
+% `lidar_positions` input argument).
 
 function lidar_results = collectScans(lidar_positions, filename)
     sub = rossubscriber('/scan');
