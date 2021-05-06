@@ -1,3 +1,4 @@
+%% Gradient Ascent
 function [positions, headings] = gradient_ascent(grad, pos_0, heading_0, lambda_0, delta, tolerance, max_steps)
     %% Setup
     % We start with all the lists at length 100, then double the length
