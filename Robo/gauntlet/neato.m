@@ -1,12 +1,13 @@
 %% Neato Runner
 % This is a simple script for the neato that simply takes a set of timed
 % wheel velocities and exeuctes them. It's very dumb so that all of the
-% smarts can be calculated ahead of time.
+% smarts can be calculated ahead of time, which drastically improves
+% performance.
 function neato(datafile)
     %% Configuration
     % Load pre-computed points
     % NOTE: msgs and ts must be sorted!
-    if nargsin < 1
+    if nargin < 1
         datafile = "drivedata.mat";
     end
     load(datafile, "startPos", "startHead", "ts", "msgs")
@@ -14,6 +15,7 @@ function neato(datafile)
     %% Connect to the Neato 
     disp("Connecting to Neato...")
     pub = rospublisher('raw_vel');
+    bumpsub = rossubscriber('bump');
 
     %% Setup the Neato
     disp("Stopping Neato...")
@@ -54,13 +56,21 @@ function neato(datafile)
             send(pub, speedMsg);
         end
         
+        bumpmsg = receive(bumpsub);
+        
+        if any(bumpmsg.Data)
+            disp("Hit Something! Stopping!")
+            break
+        end
+        
         if i == num_msgs
-            stopMsg = rosmessage(pub);
-            stopMsg.Data = [0 0];
-            send(pub, stopMsg);
             break
         end
     end
+    
+    stopMsg = rosmessage(pub);
+    stopMsg.Data = [0 0];
+    send(pub, stopMsg);
 
     disp("Done!")
 end

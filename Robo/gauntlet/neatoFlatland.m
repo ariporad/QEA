@@ -43,6 +43,7 @@ while ~tolerance_reached && n < n_max
     
     start_turn = rostic;
     while rostoc(start_turn) < turn_time
+        disp("TURN PAUSE")
         pause(0.01);
     end
     heading = current_grad;
@@ -54,14 +55,15 @@ while ~tolerance_reached && n < n_max
     
     move_time = distance/linear_speed;
     msg.Data = [linear_speed, linear_speed];
-    % start moving, stop when enough time has passed
+    % start moving, stop when enough time has passed 
     send(pub, msg);
     
     start_move = rostic;
     while rostoc(start_move) < move_time
+        disp("PAUSED");
         pause(0.01);
     end
-    position = new_pos;
+    position = new_pos
     
     n = n+1;
     lambda = lambda*delta;
@@ -71,31 +73,4 @@ end
 % stop neato
 msg.Data = [0, 0];
 send(pub, msg);
-end
-
-function [f, Z] = gauntletPotentialField()
-    syms X Y
-
-    wall_lines = [
-        -1.5, -3.37, -1.5,     1;
-         2.5, -3.37,  2.5,     1;
-         2.5, -3.37, -1.5, -3.37;
-         2.5,     1, -1.5,      1 
-    ];
-
-    obstacle_info = [   -0.25, -1.0, pi/4, 0.5;
-                         1.41, -2.0,    0, 0.5;
-                         1.00, -0.7, pi/4, 0.5];
-
-    obstacle_lines = [];
-
-    for i=1:size(obstacle_info, 1)
-        obstacle_lines = [obstacle_lines; squareToLines(obstacle_info(i, 1), obstacle_info(i, 2), obstacle_info(i, 3), obstacle_info(i, 4))];
-    end
-
-    Z = + 2 * generatePotentialLines(X, Y, obstacle_lines) ...
-        - 0.5 * abs(generatePotentialLines(X, Y, wall_lines)) ...
-        - 15 * generatePotentialCircle(X, Y, [.75, -2.5], .25);
-    Z =  -1 * Z;
-    f = matlabFunction(Z);
 end

@@ -1,25 +1,33 @@
 function [f, Z] = gauntletPotentialField()
-    syms X Y
+    syms X Y;
 
-    wall_lines = [
-        -1.5, -3.37, -1.5,     1;
-         2.5, -3.37,  2.5,     1;
-         2.5, -3.37, -1.5, -3.37;
-         2.5,     1, -1.5,      1 
-    ];
+    wall = log(sqrt((Y + 3.37) .^ 2)) + log(sqrt((Y - 1) .^ 2)) + log(sqrt((X + 1.5) .^ 2)) + log(sqrt((X - 2.5) .^ 2));
+    
+%     obstacles = ...
+%         log(sqrt((X + 0.25) .^ 2 + (Y + 1.00) .^ 2)) + ...
+%         log(sqrt((X - 1.41) .^ 2 + (Y + 2.00) .^ 2)) + ...
+%         log(sqrt((X - 1.00) .^ 2 + (Y + 0.70) .^ 2));
 
     obstacle_info = [   -0.25, -1.0, pi/4, 0.5;
                          1.41, -2.0,    0, 0.5;
                          1.00, -0.7, pi/4, 0.5];
 
-    obstacle_lines = [];
+    obstacles = 0;
 
     for i=1:size(obstacle_info, 1)
-        obstacle_lines = [obstacle_lines; squareToLines(obstacle_info(i, 1), obstacle_info(i, 2), obstacle_info(i, 3), obstacle_info(i, 4))];
+        obstacles = obstacles + ...
+            log(sqrt((X - obstacle_info(i, 1)) .^ 2 + (Y - obstacle_info(i, 2)) .^ 2));
+        
+        corners = squareToLines(obstacle_info(i, 1), obstacle_info(i, 2), obstacle_info(i, 3), obstacle_info(i, 4));
+        
+        for j=1:size(corners, 1)
+            obstacles = obstacles + ...
+                log(sqrt((X - corners(j, 1)) .^ 2 + (Y - corners(j, 2)) .^ 2));
+        end
     end
 
-    Z = + 2 * generatePotentialLines(X, Y, obstacle_lines) ...
-        - 0.5 * abs(generatePotentialLines(X, Y, wall_lines)) ...
-        - 15 * generatePotentialCircle(X, Y, [.75, -2.5], .25);
+    Z = (0.1 * obstacles) ...
+        + (0.1 * wall) ...
+        - (1.5 * log(sqrt((X - 0.75) .^ 2 + (Y + 2.50) .^ 2)));
     f = matlabFunction(Z);
 end

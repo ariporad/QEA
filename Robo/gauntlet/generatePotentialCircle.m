@@ -11,7 +11,7 @@ function Z = generatePotentialCircle(X, Y, center, r, steps)
         x = (r * cos(theta)) + center(1);
         y = (r * sin(theta)) + center(2);
         
-        Z = Z + log(sqrt((X - x) .^ 2 + (Y - y) .^ 2));
+        Z = Z + log(sqrt(abs(X - x) .^ 3 + abs(Y - y) .^ 3));
     end
 end
 

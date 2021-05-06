@@ -14,7 +14,7 @@ function Z = generatePotentialLine(X, Y, start, endpoint, steps)
         x = start(1) + (dx * i);
         y = start(2) + (dy * i);
         
-        Z = Z + log(sqrt((X - x) .^ 2 + (Y - y) .^ 2));
+        Z = Z + log(sqrt((X - x) .^ 2 + (Y - y) .^ 2)^2);
     end
 end
 
